@@ -1,5 +1,5 @@
 bl_info = {
-    "name" : "PDB",
+    "name" : "molecular",
     "author" : "Vincent Roller",
     "description" : "",
     "blender" : (2, 80, 0),
@@ -9,6 +9,7 @@ bl_info = {
     "category" : "Generic"
     
 }
+
 
 import bpy
 import os

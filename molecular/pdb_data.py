@@ -2,11 +2,45 @@ import bpy
 import requests
 from . pdb_chain import Chain
 import time
+import zlib
+import xml.etree.ElementTree as ET
 
 class PDB_Data:
     __current__ = None
 
     def __init__(self, pdb_id):
+       # self.initPDB(pdb_id)
+        self.initXML(pdb_id)
+
+
+    def initXML(self, pdb_id):
+        PDB_Data.__current__ = self
+        self.id = pdb_id
+
+        def decompress_stream(stream):
+            o = zlib.decompressobj(16 + zlib.MAX_WBITS)
+
+            for chunk in stream:
+                yield o.decompress(chunk)
+
+            yield o.flush()
+
+        r = requests.get('https://files.rcsb.org/download/'+pdb_id+'.xml.gz', stream=True)
+
+        t = decompress_stream(r.iter_content(1024))
+
+        xml = ''
+        for l in t:
+            xml += l.decode()
+
+
+        root = ET.fromstring(xml)
+        for site in root[0]:
+            x = float(site[1].text)
+            #print(x)
+        
+        
+    def initPDB(self, pdb_id):
         PDB_Data.__current__ = self
 
         self.id = pdb_id

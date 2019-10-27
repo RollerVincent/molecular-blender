@@ -9,10 +9,6 @@ class Assets:
     def load(self):
         self.materials()
 
-        obj = bpy.data.objects.new("Element_templates", None)
-        bpy.context.scene.collection.objects.link(obj)
-        obj.location = [1000000, 0, 0]
-        Assets.__element_templates_object__ = obj.name
 
         Assets.__element_colors__ = {
                 ' O': (0.9, 0.5, 0.5, 1),
@@ -41,14 +37,14 @@ class Assets:
             nodes = mat.node_tree.nodes
             nodes["Principled BSDF"].inputs[0].default_value = color
 
-            nodes["Principled BSDF"].inputs[1].default_value = 0.2              # subsurface
+            nodes["Principled BSDF"].inputs[1].default_value = 0.05              # subsurface
             nodes["Principled BSDF"].inputs[5].default_value = 0.1                # specular
 
         return mat
 
 
     def materials(self):
-        mat = bpy.data.materials.new(name="SpaceFill")
+        mat = bpy.data.materials.new(name="Spacefill")
         mat.use_nodes = True
         nodes = mat.node_tree.nodes
         nodes["Principled BSDF"].inputs[1].default_value = 0.05
@@ -60,10 +56,4 @@ class Assets:
         nodes["Principled BSDF"].inputs[5].default_value
 
 
-        mat = bpy.data.materials.new(name="SurfaceBase")
-        mat.use_nodes = True
-        nodes = mat.node_tree.nodes
-        nodes["Principled BSDF"].inputs[1].default_value = 0.05               # subsurface
-        nodes["Principled BSDF"].inputs[5].default_value = 0.1                # specular
-       
         

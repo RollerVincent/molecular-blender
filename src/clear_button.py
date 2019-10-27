@@ -12,7 +12,6 @@ class Clear_OT_Operator(bpy.types.Operator):
 
         bpy.data.objects['Camera'].select_set(False)
         bpy.data.objects['Light'].select_set(False)
-        bpy.data.objects['Element_templates'].select_set(False)
 
         bpy.ops.object.delete() 
 

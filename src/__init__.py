@@ -1,16 +1,3 @@
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTIBILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
 bl_info = {
     "name" : "PDB",
     "author" : "Vincent Roller",
@@ -34,6 +21,9 @@ from . pdb_panel import PDB_PT_Panel
 from . pdb_id_button import PDB_ID_OT_Operator
 from . pdb_object_panel import PDB_Object_PT_Panel
 from . pdb_coloring_operator import PDB_Coloring
+from . pdb_representation_operator import PDB_Representation
+from . pdb_rep_surf_operator import PDB_REP_SURF_OT_Operator
+from . pdb_rep_spf_operator import PDB_REP_SPF_OT_Operator
 
 
 
@@ -44,7 +34,10 @@ classes = (
            Clear_OT_Operator,
            Tools_PT_Panel,
            PDB_Object_PT_Panel,
-           PDB_Coloring
+           PDB_Coloring,
+           PDB_Representation,
+           PDB_REP_SURF_OT_Operator,
+           PDB_REP_SPF_OT_Operator
           ) 
 
 
@@ -64,9 +57,10 @@ def register():
       (
         name = "Name ",
         description = "Object name",
-        default = "object"
+        default = "object",
       )
-    
+
+   
     
 
     

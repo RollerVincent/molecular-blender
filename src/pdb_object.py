@@ -47,7 +47,8 @@ class PDB_Object:
 
         self.representation = None
         self.initialized_representations = set()
-        
+        self.color_sheme = None
+        self.atom_scale = None
 
         # representaion spacefill
         self.chain_objects = {}
@@ -57,27 +58,48 @@ class PDB_Object:
         self.surface_template = 'surface_base'
         
 
-        self.init_surface()
+        # self.init_surface()
+        # self.recolor('compound')
+        # self.recolor('chain')
+        # self.recolor('uni')
+
+        self.init_spacefill()
         self.recolor('compound')
-        self.recolor('chain')
-        self.recolor('uni')
+        self.rescale(1.8)
 
-
-
-     #   self.init_spacefill()
-      #  if len(self.data.compounds) > 1:
-       #     self.recolor('compound')
-        #else:
-         #   self.recolor('chain')
-        #self.rescale(1.8)
-
+    def set_representation(self, representation):
+        self.unset_representation()
+        if representation == 'spacefill':
+            self.chain_objects = {}
+            self.element_objects = {}
+            self.init_spacefill()
+        elif representation == 'surface':
+            self.init_surface()
+        dg = bpy.context.evaluated_depsgraph_get()
+        dg.update()
+        self.recolor(self.color_sheme)
+        self.rescale(self.atom_scale)
         
-        
+
+    def unset_representation(self):
+    #    bpy.ops.object.select_all(action='DESELECT')
+        for ch in bpy.data.objects[self.name].children:
+            #ch.select_set(True)
+            
+            for e in ch.children:
+                bpy.data.objects.remove(e)
+            bpy.data.objects.remove(ch)
+                #e.select_set(True)  
+   #     bpy.ops.object.delete()
+             
+
+
 
     def colors(self, n, b, t):
         return [(random()*b+1-b-t, random()*b+1-b-t, random()*b+1-b-t, 1) for i in range(n)]
 
     def rescale(self, value):
+        self.atom_scale = value
         if self.representation == 'spacefill':
             for chain in self.chain_objects:
                 for obj in self.chain_objects[chain]:
@@ -92,19 +114,13 @@ class PDB_Object:
                 print(len(obj.data.elements))
                 print('fu')
 
-
-
-
-
-
-
-
     def recolor(self, sheme):
+        self.color_sheme = sheme
         if self.representation == 'spacefill':
             if sheme == 'chain':
                 c = {}
                 for i,chain in enumerate(self.chain_objects):
-                    c.update({chain:self.chain_colors[i]})
+                    c.update({chain:PDB_Object.__idChainColors__[self.data.id][i]})
                 for chain in self.chain_objects:
                     for obj in self.chain_objects[chain]:
                         self.recolor_obj(bpy.data.objects[obj], c[chain])
@@ -116,9 +132,13 @@ class PDB_Object:
                 for i,c in enumerate(self.data.compounds):
                     for ch in self.data.compounds[c][1]:
                         for obj in self.chain_objects[ch]:
-                            self.recolor_obj(bpy.data.objects[obj], self.compound_colors[i])
-        
-        if self.representation == 'surface':
+                            self.recolor_obj(bpy.data.objects[obj], PDB_Object.__idCompoundColors__[self.data.id][i])
+            elif sheme == 'uni':
+                for ele in self.element_objects:
+                    for obj in self.element_objects[ele]:
+                        self.recolor_obj(bpy.data.objects[obj], PDB_Object.__idUniColor__[self.data.id])
+
+        elif self.representation == 'surface':
             if sheme == 'compound':
                 for i,c in enumerate(self.data.compounds):
                     for ch in self.data.compounds[c][1]:
@@ -132,8 +152,13 @@ class PDB_Object:
                         obj.data.materials[0] = chain_mat
 
             elif sheme == 'chain':
-                for chain in self.data.chains:
+                for k in bpy.data.objects:
+                    print(k)
+                for ind, chain in enumerate(self.data.chains):
+                   
                     obj = bpy.data.objects[chain + '_' + self.name + '.pdb']
+                    print(obj.data)
+
                     nn = chain + '_' + self.id
                     chain_mat = None
                     if nn not in bpy.data.materials:
@@ -152,8 +177,7 @@ class PDB_Object:
                     else:
                         chain_mat = bpy.data.materials[nn]
                     obj.data.materials[0] = chain_mat 
-                        
-                        
+                                            
     def recolor_obj(self, obj, color):
         mesh = obj.data
         vcol_layer = mesh.vertex_colors.active
@@ -185,15 +209,15 @@ class PDB_Object:
                 self.chain_objects.update({chain:[]})
                 spheres = {}
                 for e in radii:
-                    spheres.update({e:Sphere(chain + '_' + e.strip() + '_' + self.obj.name, [0,0,0], radii[e]*0.03, colors[e], mat)})
+                    spheres.update({e:Sphere(chain + '_' + e.strip() + '_' + self.name, [0,0,0], radii[e]*0.03, colors[e], mat)})
                     if e not in self.element_objects:
                         self.element_objects.update({e:[]})
                     self.element_objects[e].append(spheres[e].obj.name)
                 
 
                 for i,s in enumerate(spheres):
+                    spheres[s].obj.parent = bpy.data.objects[self.name]
                     spheres[s].obj.location = [0,0,0]
-                    spheres[s].obj.parent = bpy.data.objects[Assets.__element_templates_object__]
                     self.chain_objects[chain].append(spheres[s].obj.name)
                 template_spheres.update({chain:spheres})
             
@@ -205,16 +229,25 @@ class PDB_Object:
                 for atom in self.data.chains[chain].atoms:
                     if atom[-1] != ' H':
                         per_elem_loc[atom[-1]].append([atom[7]*0.03, atom[8]*0.03, atom[9]*0.03])
+                
+                
+
+                bpy.ops.object.select_all(action='DESELECT')
                 for e in per_elem_loc:
                     if len(per_elem_loc[e]) != 0:
                         ps = self.add_particle_system(per_elem_loc[e], template_spheres[chain][e].obj, chain + '_' + e.strip())
+                        template_spheres[chain][e].obj.location = per_elem_loc[e][0]
                         obs.append(ps)
-
+                    else:
+                        template_spheres[chain][e].obj.select_set(True)
+                        self.chain_objects[chain].remove(chain + '_' + e.strip() + '_' + self.name)
+                        self.element_objects[e].remove(chain + '_' + e.strip() + '_' + self.name)
+                        
+                bpy.ops.object.delete() 
             
-                obj = bpy.data.objects.new(chain + '_' + self.obj.name, None)
-                obj.location = self.obj.location
+                obj = bpy.data.objects.new(chain + '_' + self.name + '.pdb', None)
                 bpy.context.scene.collection.objects.link(obj)
-                obj.parent = self.obj
+                obj.parent = bpy.data.objects[self.name]
 
 
                 for o in obs:
@@ -232,11 +265,11 @@ class PDB_Object:
         numObjs = len(PDB_Object.__objects__)
 
         for ind, chain in enumerate(self.data.chains):
-            name = chain + '_' + self.obj.name + '.pdb'
+            name = chain + '_' + self.name + '.pdb'
             
             mball = bpy.data.metaballs.new('metaball_' + name)
             mball_obj = bpy.data.objects.new(name, mball)
-            mball_obj.parent = self.obj
+            mball_obj.parent = bpy.data.objects[self.name]
             scene.collection.objects.link(mball_obj)
 
             mball.resolution = 0.03
@@ -269,7 +302,7 @@ class PDB_Object:
         mesh.from_pydata(locations, [], [])
         obj = bpy.data.objects.new(name, mesh)
         bpy.context.scene.collection.objects.link(obj)
-        obj.parent = self.obj
+        obj.parent = bpy.data.objects[self.name]
 
         obj.modifiers.new("particle_system", type='PARTICLE_SYSTEM')
         part = obj.particle_systems[0]

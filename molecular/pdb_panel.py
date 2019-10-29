@@ -11,7 +11,6 @@ class PDB_PT_Panel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.prop(context.scene, "input_pdb_id")
-        layout.prop(context.scene, "input_object_name")
         layout.operator('button.pdb_id', text = 'Create Object')
         
         

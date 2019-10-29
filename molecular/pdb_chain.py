@@ -3,3 +3,4 @@ class Chain:
         self.name = name
         self.compound = None
         self.atoms = []
+        self.hetatms = []

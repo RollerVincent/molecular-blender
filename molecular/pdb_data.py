@@ -4,6 +4,7 @@ from . pdb_chain import Chain
 import time
 import zlib
 import xml.etree.ElementTree as ET
+from .atom import Atom
 
 class PDB_Data:
     __current__ = None
@@ -14,30 +15,73 @@ class PDB_Data:
 
 
     def initXML(self, pdb_id):
+        t1 = time.time()
         PDB_Data.__current__ = self
         self.id = pdb_id
 
         def decompress_stream(stream):
             o = zlib.decompressobj(16 + zlib.MAX_WBITS)
-
             for chunk in stream:
                 yield o.decompress(chunk)
-
             yield o.flush()
 
         r = requests.get('https://files.rcsb.org/download/'+pdb_id+'.xml.gz', stream=True)
-
         t = decompress_stream(r.iter_content(1024))
-
         xml = ''
         for l in t:
             xml += l.decode()
 
-
         root = ET.fromstring(xml)
-        for site in root[0]:
-            x = float(site[1].text)
-            #print(x)
+
+        self.compounds = {}
+        self.chains = {}
+
+        # init compounds
+        for e in root.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}entity_polyCategory'):
+            self.compounds.update({e.attrib['entity_id']: e[4].text.split(',')})
+
+        # init chains
+        for c in self.compounds:
+            for ch in self.compounds[c]:
+                self.chains.update({ch:Chain(ch)})
+                self.chains[ch].compound = c
+
+        # init atoms
+        for site in root.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}atom_siteCategory'):
+            if site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}group_PDB').text[0] != 'H': # ATOM
+                chain = site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}auth_asym_id').text
+                self.chains[chain].atoms.append(
+                    Atom(
+                        float(site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}Cartn_x').text),
+                        float(site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}Cartn_y').text),
+                        float(site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}Cartn_z').text),
+                        site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}type_symbol').text,
+                        site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}auth_atom_id').text,
+                        site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}auth_comp_id').text,
+                        int(site.attrib['id'])
+                    )
+                )
+            else: # HETATM
+                chain = site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}auth_asym_id').text
+                self.chains[chain].hetatms.append(
+                    Atom(
+                        float(site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}Cartn_x').text),
+                        float(site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}Cartn_y').text),
+                        float(site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}Cartn_z').text),
+                        site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}type_symbol').text,
+                        site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}auth_atom_id').text,
+                        site.find('{http://pdbml.pdb.org/schema/pdbx-v50.xsd}auth_comp_id').text,
+                        int(site.attrib['id'])
+                    )
+                )
+            #    print(self.chains[chain].hetatms[-1].element)
+             #   print(self.chains[chain].hetatms[-1].comp)
+              #  print()
+                
+                
+               
+        t2 = time.time()
+        print('Loading data took ' + str(t2-t1) + ' \n')
         
         
     def initPDB(self, pdb_id):

@@ -3,7 +3,7 @@ from .pdb_object import PDB_Object
 
 class PDB_Object_PT_Panel(bpy.types.Panel):
     bl_idname = "panel.pdb_object"
-    bl_label = "PDBhh"
+    bl_label = "PDB"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "object"
@@ -11,11 +11,21 @@ class PDB_Object_PT_Panel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-
-        row = layout.row()
-        row.operator('button.pdb_rep_surf', text = '', icon = 'SHADING_WIRE')
-        row.operator('button.pdb_rep_spf', text = '', icon = 'SHADING_SOLID')   
+        
+        box = layout.box()
+        box.label(text = 'ATOM')
+        row = box.row()
+        row.operator('button.pdb_rep_surf', text = '', icon = 'MOD_SMOKE')
+        row.operator('button.pdb_rep_spf', text = '', icon = 'META_DATA')
+        row.operator('button.pdb_rep_ssg', text = '', icon = 'STROKE')   
         row.operator('dropdown.color')
+
+        box = layout.box()
+        box.label(text = 'HETATM')
+        row = box.row()
+        row.operator('button.pdb_rep_surf_het', text = '', icon = 'MOD_SMOKE')
+        row.operator('button.pdb_rep_spf_het', text = '', icon = 'META_DATA')
+        row.operator('dropdown.color_het')
 
       
 

@@ -1,3 +1,4 @@
+
 bl_info = {
     "name" : "molecular",
     "author" : "Vincent Roller",
@@ -22,9 +23,14 @@ from . pdb_panel import PDB_PT_Panel
 from . pdb_id_button import PDB_ID_OT_Operator
 from . pdb_object_panel import PDB_Object_PT_Panel
 from . pdb_coloring_operator import PDB_Coloring
+from . pdb_het_coloring_operator import PDB_HET_Coloring
 from . pdb_representation_operator import PDB_Representation
 from . pdb_rep_surf_operator import PDB_REP_SURF_OT_Operator
 from . pdb_rep_spf_operator import PDB_REP_SPF_OT_Operator
+from . pdb_rep_ssg_operator import PDB_REP_SSG_OT_Operator
+from . pdb_rep_spf_het_operator import PDB_REP_SPF_HET_OT_Operator
+from . pdb_rep_surf_het_operator import PDB_REP_SURF_HET_OT_Operator
+
 
 
 
@@ -36,9 +42,13 @@ classes = (
            Tools_PT_Panel,
            PDB_Object_PT_Panel,
            PDB_Coloring,
+           PDB_HET_Coloring,
            PDB_Representation,
            PDB_REP_SURF_OT_Operator,
-           PDB_REP_SPF_OT_Operator
+           PDB_REP_SPF_OT_Operator,
+           PDB_REP_SSG_OT_Operator,
+           PDB_REP_SURF_HET_OT_Operator,
+           PDB_REP_SPF_HET_OT_Operator
           ) 
 
 

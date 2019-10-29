@@ -7,20 +7,6 @@ class PDB_Coloring(bpy.types.Operator):
     bl_register = True
     bl_options = {'REGISTER', 'UNDO'}
 
-
-
-
- #   representation = bpy.props.EnumProperty \
-  #    (
-   #     items = 
-    #    (
-     #       ('spacefill', 'Spacefill', 'Colors the structure in one color'),
-      #      ('surface', 'Surface', 'Colors the structure by chain'),       
-       # ),
-        #name = "Representation",
-      #)
-
-
     color_sheme = bpy.props.EnumProperty \
       (
         items = 
@@ -34,7 +20,6 @@ class PDB_Coloring(bpy.types.Operator):
         name = "Coloring",
       )
     
-   
     atom_scale = bpy.props.FloatProperty \
       (
         name = "Volume",
@@ -45,27 +30,11 @@ class PDB_Coloring(bpy.types.Operator):
         obj = PDB_Object.__objects__[context.object.name]
         obj.recolor(self.color_sheme)
         obj.rescale(self.atom_scale)
-
-     #   if obj.color_sheme != self.color_sheme:
-      #      obj.recolor(self.color_sheme)
-
-      #  if obj.atom_scale != self.atom_scale:
-       #     obj.rescale(self.atom_scale)
-
-    #    if obj.representation != self.representation:
-     #       obj.set_representation(self.representation)
-
-
-
-
-        
-        
-        
-
-
-        
         return {'FINISHED'}
 
     def invoke(self, context, event):
+        obj = PDB_Object.__objects__[context.object.name]
+        self.atom_scale = obj.atom_scale
+        self.color_sheme = obj.color_sheme
         wm = context.window_manager
         return wm.invoke_props_popup(self, event)
